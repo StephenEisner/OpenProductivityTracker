@@ -1,23 +1,32 @@
-import { Swipeable } from 'react-native-gesture-handler';
 
+// app/(tabs)/index.tsx
 import React, { useEffect, useState } from 'react';
 import {
   View,
+  Text,
   TextInput,
   Button,
   FlatList,
-  Text,
   TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
 } from 'react-native';
-import { initDb, deleteTask, insertTask, fetchTasks, markTaskDone } from '../../lib/db';
+import { Swipeable } from 'react-native-gesture-handler';
+import {
+  initDb,
+  insertTask,
+  fetchTasks,
+  markTaskDone,
+  deleteTask,
+} from '../../lib/db';
 
 export default function HomeScreen() {
-  const [tasks, setTasks] = useState<{ id: number; title: string; done: number }[]>([]);
+  const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
+  const [tag, setTag] = useState('');
+  const [dueDate, setDueDate] = useState('');
 
   useEffect(() => {
     const load = async () => {
@@ -28,44 +37,62 @@ export default function HomeScreen() {
     load();
   }, []);
 
+  const refreshTasks = async () => {
+    const data = await fetchTasks();
+    setTasks(data);
+  };
+
   const handleAddTask = async () => {
     if (!newTask.trim()) return;
-    await insertTask(newTask);
-    const data = await fetchTasks();
-    setTasks(data);
+
+    await insertTask(newTask, '', dueDate, 0, 0, tag, null);
     setNewTask('');
+    setDueDate('');
+    setTag('');
+    await refreshTasks();
   };
 
-  const handleToggleDone = async (id: number, done: number) => {
+  const handleToggleDone = async (id, done) => {
     await markTaskDone(id, done ? 0 : 1);
-    const data = await fetchTasks();
-    setTasks(data);
+    await refreshTasks();
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id) => {
     await deleteTask(id);
-    const refreshedTasks = await fetchTasks(); // re-fetch from DB
-    setTasks(refreshedTasks);                 // update UI
+    await refreshTasks();
   };
 
-//  const handleDelete = async (id: number) => {
-//    console.log('[handleDelete] Called with ID:', id);
-//    try {
-//      await deleteTask(id);
-//      console.log('[handleDelete] Successfully deleted task');
-//      const refreshedTasks = await fetchTasks();
-//      setTasks(refreshedTasks);
-//    } catch (err) {
-//      console.error('[handleDelete] Error:', err);
-//    }
-//  };
+  const renderItem = ({ item }) => (
+    <Swipeable
+      renderRightActions={() => (
+        <TouchableOpacity
+          onPress={() => handleDelete(item.id)}
+          style={styles.deleteButton}
+        >
+          <Text style={styles.deleteText}>Delete</Text>
+        </TouchableOpacity>
+      )}
+    >
+      <TouchableOpacity onPress={() => handleToggleDone(item.id, item.done)}>
+        <View style={styles.taskItem}>
+          <Text style={item.done ? styles.doneTask : styles.taskTitle}>
+            {item.title}
+          </Text>
+          {item.tag ? <Text style={styles.taskTag}>#{item.tag}</Text> : null}
+          {item.due_date ? (
+            <Text style={styles.taskDue}>Due: {item.due_date}</Text>
+          ) : null}
+        </View>
+      </TouchableOpacity>
+    </Swipeable>
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={80} // adjust if needed
+        keyboardVerticalOffset={80}
       >
         <Text style={styles.heading}>FreeToDo</Text>
 
@@ -73,27 +100,7 @@ export default function HomeScreen() {
           data={tasks}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.taskList}
-
-          renderItem={({ item }) => (
-            <Swipeable
-              renderRightActions={() => (
-                <TouchableOpacity
-                  onPress={async () => {
-                    await handleDelete(item.id)
-                  }}
-                  style={styles.deleteButton}
-                >
-                  <Text style={styles.deleteText}>Delete</Text>
-                </TouchableOpacity>
-              )}
-            >
-              <TouchableOpacity onPress={() => handleToggleDone(item.id, item.done)}>
-                <Text style={item.done ? styles.doneTask : styles.task}>
-                  {item.title}
-                </Text>
-              </TouchableOpacity>
-            </Swipeable>
-          )}
+          renderItem={renderItem}
         />
 
         <View style={styles.inputContainer}>
@@ -101,7 +108,19 @@ export default function HomeScreen() {
             style={styles.input}
             value={newTask}
             onChangeText={setNewTask}
-            placeholder="New task..."
+            placeholder="Task title"
+          />
+          <TextInput
+            style={styles.input}
+            value={tag}
+            onChangeText={setTag}
+            placeholder="Tag (optional)"
+          />
+          <TextInput
+            style={styles.input}
+            value={dueDate}
+            onChangeText={setDueDate}
+            placeholder="Due date (YYYY-MM-DD)"
           />
           <Button title="Add Task" onPress={handleAddTask} />
         </View>
@@ -128,15 +147,24 @@ const styles = StyleSheet.create({
   taskList: {
     paddingBottom: 16,
   },
-  task: {
-    fontSize: 18,
+  taskItem: {
     paddingVertical: 8,
+  },
+  taskTitle: {
+    fontSize: 18,
   },
   doneTask: {
     fontSize: 18,
-    paddingVertical: 8,
     textDecorationLine: 'line-through',
     color: '#888',
+  },
+  taskTag: {
+    fontSize: 14,
+    color: '#555',
+  },
+  taskDue: {
+    fontSize: 14,
+    color: '#c00',
   },
   inputContainer: {
     marginBottom: 16,
