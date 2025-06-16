@@ -1,3 +1,7 @@
+# BIG TODO 
+## MAke sure the Rust Core and the CLI are going to get properly integrated. These are probably going to be needed to connect across apps.
+## Think about how we are going to securely get everything across apps. Also, think about how we are going to properly
+
 # FreeList
 
 Cross-platform FOSS ecosystem for task + grocery + health tracking. The ultimate productivity ecosystem. 
@@ -28,5 +32,8 @@ I want the app to work with multiple operating systems. I am also thinking that 
 
 I want the cooking and list app to allow you to quickly create a grocery list. Perhaps we should also have an app that keeps track of what you have in your fridge, so the grocery list is appropriately calculated. If you are really honest with yourself, and track everything you eat, then the system will know exactly what you have in your fridge and if you have enough. 
 
+
+So, we want the OpenStorageTracker when you say you ran out of something to ask, do you want me to add this to your groccery list. This then gets added as a task tagged as grocceries.
+Or, OpenCooking says, do you want to add everything you don't have into a groccery list. This checks your openstoragetracker, and adds everything you don't have, asking about the things you are running low on or might be getting old.
 
 

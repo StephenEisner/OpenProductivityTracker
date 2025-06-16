@@ -18,28 +18,39 @@ import {
   initDb,
   insertTask,
   fetchTasks,
+  fetchAllTags,
   markTaskDone,
   deleteTask,
 } from '../../lib/db';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+
+const router = useRouter();
 
 export default function HomeScreen() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
   const [tag, setTag] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [filter, setFilter] = useState<'all' | 'done' | 'todo'>('all');
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
 
   useEffect(() => {
     const load = async () => {
       await initDb();
-      const data = await fetchTasks();
+      const data = await fetchTasks(filter);
       setTasks(data);
+      const tags = await fetchAllTags();
+      setAvailableTags(tags);
     };
     load();
-  }, []);
+  }, [filter]);
 
   const refreshTasks = async () => {
-    const data = await fetchTasks();
+    const data = await fetchTasks(filter);
     setTasks(data);
+    const tags = await fetchAllTags();
+    setAvailableTags(tags);
   };
 
   const handleAddTask = async () => {
@@ -94,7 +105,37 @@ export default function HomeScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={80}
       >
-        <Text style={styles.heading}>FreeToDo</Text>
+        <View style={styles.topBar}>
+          <View style={styles.filterContainer}>
+            {['all', 'todo', 'done'].map((f) => (
+              <TouchableOpacity
+                key={f}
+                style={[styles.filterButton, filter === f && styles.activeFilter]}
+                onPress={() => setFilter(f)}
+              >
+                <Text style={styles.filterText}>{f.toUpperCase()}</Text>
+              </TouchableOpacity>
+            ))}
+            {availableTags.map((t) => (
+              <TouchableOpacity
+                key={t}
+                style={styles.filterButton}
+                onPress={async () => {
+                  const data = await fetchTasks(filter, t);
+                  setTasks(data);
+                }}
+              >
+                <Text style={styles.filterText}>#{t}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => router.push('/settings')}
+          >
+            <Ionicons name="settings-outline" size={24} color="black" />
+          </TouchableOpacity>
+        </View>
 
         <FlatList
           data={tasks}
@@ -109,18 +150,21 @@ export default function HomeScreen() {
             value={newTask}
             onChangeText={setNewTask}
             placeholder="Task title"
+            placeholderTextColor="#666"
           />
           <TextInput
             style={styles.input}
             value={tag}
             onChangeText={setTag}
             placeholder="Tag (optional)"
+            placeholderTextColor="#666"
           />
           <TextInput
             style={styles.input}
             value={dueDate}
             onChangeText={setDueDate}
             placeholder="Due date (YYYY-MM-DD)"
+            placeholderTextColor="#666"
           />
           <Button title="Add Task" onPress={handleAddTask} />
         </View>
@@ -138,11 +182,33 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
   },
-  heading: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginVertical: 16,
-    alignSelf: 'center',
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 8,
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    flex: 1,
+    gap: 8,
+  },
+  filterButton: {
+    padding: 6,
+    backgroundColor: '#eee',
+    borderRadius: 6,
+    marginRight: 6,
+    marginBottom: 4,
+  },
+  activeFilter: {
+    backgroundColor: '#cde',
+  },
+  filterText: {
+    fontSize: 14,
+  },
+  settingsButton: {
+    padding: 4,
   },
   taskList: {
     paddingBottom: 16,
@@ -152,6 +218,7 @@ const styles = StyleSheet.create({
   },
   taskTitle: {
     fontSize: 18,
+    color: '#000',
   },
   doneTask: {
     fontSize: 18,
@@ -175,6 +242,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 6,
     marginBottom: 8,
+    color: '#000',
   },
   deleteButton: {
     backgroundColor: 'red',

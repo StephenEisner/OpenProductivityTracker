@@ -1,3 +1,17 @@
+TODO
+Think about how to make it so that when we return to the home page it always refreshes the task list
+Make it so the tag list is a drop down, not just a list.
+Get to working on more advanced tag features
+Improve date entry
+Improve tag entry, make it so that you can click a pre existing tag, or there you can add a new one
+Get to working on more advanced task features, like timing, and planning
+Make a button that creates a calender.
+Think back to getting the Rust integerated again.
+Add more aesthetic customization options in settings
+Add the ability to open a task and make it recurring, or add extra info about it
+
+# IDEAS
+## Get a "Plan your day button" which goes through tasks you have to do, and also allows you to create a new list for the day. The next day, the program will prompt you asking if you want to add the unfinished tasks of yesterday onto today.
 
 
 
