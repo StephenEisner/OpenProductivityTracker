@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Build for iOS
+cargo build --target aarch64-apple-ios --release
+cargo build --target x86_64-apple-ios --release
+
+# Build for Android
+#cargo build --target aarch64-linux-android --release
+#cargo build --target armv7-linux-androideabi --release
+#cargo build --target x86_64-linux-android --release
+#cargo build --target i686-linux-android --release
+
+# Create universal iOS library
+lipo -create \
+    target/aarch64-apple-ios/release/libcore.a \
+    target/x86_64-apple-ios/release/libcore.a \
+    -output target/libcore-ios.a

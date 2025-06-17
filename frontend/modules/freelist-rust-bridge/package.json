@@ -1,0 +1,25 @@
+{
+  "name": "react-native-freelist-rust-bridge",
+  "version": "0.0.0",
+  "description": "Connects the freelist frontend to the rust backend",
+  "main": "src/index",
+  "codegenConfig": {
+    "name": "FreelistRustBridgeSpec",
+    "type": "modules",
+    "jsSrcsDir": "src"
+  },
+  "author": " <> ()",
+  "license": "UNLICENSED",
+  "homepage": "#readme",
+  "devDependencies": {
+    "@react-native/babel-preset": "0.79.2",
+    "@types/react": "^19.0.0",
+    "react": "19.0.0",
+    "react-native": "0.79.2"
+  },
+  "create-react-native-library": {
+    "languages": "kotlin-objc",
+    "type": "turbo-module",
+    "version": "0.51.0"
+  }
+}

@@ -1,13 +1,11 @@
-// core/src/lib.rs
 pub mod task;
 pub mod task_list;
 pub mod database;
+pub mod ffi;
 
 pub use task::Task;
 pub use task_list::TaskList;
 pub use database::{Database, TaskFilter, TaskStatus};
-
-// Re-export commonly used types
 pub use chrono::{DateTime, Utc};
 
 pub fn add(left: u64, right: u64) -> u64 {
