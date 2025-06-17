@@ -17,6 +17,7 @@ import { Swipeable } from 'react-native-gesture-handler';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { freelistAPI, Task } from '../../lib/FreelistRust';
+import NativeModuleTest from '../../components/NativeModuleTest';
 
 const router = useRouter();
 
@@ -29,6 +30,7 @@ export default function HomeScreen() {
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [showDebug, setShowDebug] = useState(true); // Add debug mode
 
   useEffect(() => {
     initializeApp();
@@ -208,6 +210,12 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <Text style={styles.headerTitle}>FreeList</Text>
           <View style={styles.headerRight}>
+            <TouchableOpacity
+              onPress={() => setShowDebug(!showDebug)}
+              style={styles.debugButton}
+            >
+              <Text style={styles.debugButtonText}>🔍</Text>
+            </TouchableOpacity>
             <Text style={styles.implementationIndicator}>
               {freelistAPI.isUsingNative() ? '🦀' : '💾'}
             </Text>
@@ -219,6 +227,8 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {showDebug && <NativeModuleTest />}
 
         <View style={styles.filterContainer}>
           {(['all', 'todo', 'done'] as const).map((f) => (
@@ -333,6 +343,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
+  },
+  debugButton: {
+    padding: 4,
+    marginRight: 8,
+  },
+  debugButtonText: {
+    fontSize: 16,
   },
   headerRight: {
     flexDirection: 'row',
